@@ -1,8 +1,8 @@
 import { Routes, Route } from 'react-router-dom';
-import LandingPage from '../pages/LandingPage';
-import DonationFlow from '../pages/DonationFlow';
-import PlaidFlow from '../pages/PlaidFlow';
-import ResultsPage from '../pages/ResultsPage';
+import LandingPage from './pages/LandingPage';
+import DonationFlow from './pages/DonationFlow';
+import PlaidFlow from './pages/PlaidFlow';
+import ResultsPage from './pages/ResultsPage';
 
 function App() {
     return (

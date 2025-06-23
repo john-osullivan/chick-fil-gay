@@ -11,5 +11,5 @@
     "baseUrl": "./src",
     "outDir": "./dist"
   },
-  "include": ["src", "pages", "components", "services", "utils"]
+  "include": ["src", "src/pages", "src/components", "services", "utils"]
 }
