@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createPlaidLinkToken, exchangePlaidPublicToken, fetchPlaidTransactions } from '../src/services/api';
+import { createPlaidLinkToken, exchangePlaidPublicToken, fetchPlaidTransactions } from '../services/api';
 import { PlaidLink } from 'react-plaid-link';
 
 function PlaidFlow() {

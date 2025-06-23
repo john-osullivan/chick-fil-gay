@@ -1,0 +1,12 @@
+name = "chick-fil-gay-web"
+type = "webpack"
+account_id = "${CLOUDFLARE_ACCOUNT_ID}"
+compatibility_date = "2025-06-22"
+workers_dev = false
+
+[site]
+bucket = "./dist"
+entry-point = "."
+
+[env.production]
+# Set your custom domain in the Cloudflare dashboard after first deploy

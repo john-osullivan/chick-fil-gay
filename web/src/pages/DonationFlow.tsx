@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { createStripeSession, validateStripeSession } from '../src/services/api';
+import { createStripeSession, validateStripeSession } from '../services/api';
 
 function DonationFlow() {
     const [step, setStep] = useState<'intro' | 'pay' | 'validating' | 'plaid' | 'error'>('intro');
