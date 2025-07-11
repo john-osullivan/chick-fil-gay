@@ -4,20 +4,25 @@
   "private": true,
   "type": "module",
   "main": "functions/index.ts",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "dev": "wrangler dev",
-    "build": "wrangler publish",
-    "test": "vitest"
+    "build": "wrangler build",
+    "test": "pnpx vitest ./tests --config ./vitest.config.ts"
   },
   "dependencies": {
     "itty-router": "^4.0.0",
     "plaid": "^12.0.0",
-    "stripe": "^12.0.0"
+    "stripe": "^12.0.0",
+    "vite": "^7.0.4"
   },
   "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.8.53",
     "@types/node": "^20.0.0",
     "typescript": "^5.0.0",
-    "vitest": "^1.6.1",
-    "wrangler": "^3.0.0"
+    "vitest": "~3.2.0",
+    "wrangler": "^4.24.3"
   }
 }

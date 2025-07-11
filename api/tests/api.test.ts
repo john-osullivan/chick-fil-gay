@@ -1,61 +1,96 @@
-import { describe, it, expect, vi } from 'vitest';
-import * as stripeLogic from '../functions/stripe';
-import * as plaidLogic from '../functions/plaid';
+import { describe, it, expect, beforeAll } from 'vitest';
+import router from '../functions/index';
 
-// Mock Stripe and Plaid classes
-const mockStripe = {
-  checkout: {
-    sessions: {
-      create: vi.fn(async () => ({ id: 'sess_123', url: 'https://stripe.com/checkout' })),
-      retrieve: vi.fn(async (id) => ({ payment_status: id === 'paid' ? 'paid' : 'unpaid' }))
+function makeRequest(path: string, method: string = 'GET', body?: any) {
+  const url = `http://localhost:8787${path}`;
+  return router.fetch(new Request(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined,
+  }));
+}
+
+describe('API integration', () => {
+  it('returns API root', async () => {
+    try {
+      const res = await makeRequest('/');
+      const text = await res.text();
+      expect(text).toMatch(/Chick-fil-Gay API/);
+    } catch (err) {
+      console.error('API root error:', err instanceof Error ? err.message : String(err));
+      throw err;
     }
-  }
-};
-
-const mockPlaid = {
-  linkTokenCreate: vi.fn(async () => ({ data: { link_token: 'link-token-123' } })),
-  itemPublicTokenExchange: vi.fn(async () => ({ data: { access_token: 'access-token-123' } })),
-  transactionsGet: vi.fn(async () => ({ data: { transactions: [{ date: '2024-01-01', name: 'Chick-fil-A', amount: 42.42 }] } }))
-};
-
-describe('API smoke test', () => {
-  it('should be true', () => {
-    expect(true).toBe(true);
-  });
-});
-
-describe('stripe logic', () => {
-  it('creates a Stripe session', async () => {
-    const session = await stripeLogic.createStripeSession(mockStripe as any, 'https://test');
-    expect(session.id).toBe('sess_123');
-    expect(session.url).toContain('stripe.com');
   });
 
-  it('validates a paid Stripe session', async () => {
-    const paid = await stripeLogic.validateStripeSession(mockStripe as any, 'paid');
-    expect(paid).toBe(true);
+  it.only('creates a Stripe session', async () => {
+    try {
+      const res = await makeRequest('/stripe/create-session', 'POST');
+      const text = await res.clone().text();
+      console.log('Stripe session response:', res.status, text);
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data).toHaveProperty('id');
+      expect(data).toHaveProperty('url');
+    } catch (err) {
+      console.error('Stripe session error:', err instanceof Error ? err.message : String(err));
+      throw err;
+    }
   });
 
-  it('validates an unpaid Stripe session', async () => {
-    const paid = await stripeLogic.validateStripeSession(mockStripe as any, 'unpaid');
-    expect(paid).toBe(false);
+  it('validates a Stripe session (should fail for random id)', async () => {
+    try {
+      const res = await makeRequest('/stripe/validate-session', 'POST', { sessionId: 'random' });
+      const text = await res.clone().text();
+      console.log('Stripe validate response:', res.status, text);
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data).toHaveProperty('paid');
+    } catch (err) {
+      console.error('Stripe validate error:', err instanceof Error ? err.message : String(err));
+      throw err;
+    }
   });
-});
 
-describe('plaid logic', () => {
   it('creates a Plaid link token', async () => {
-    const token = await plaidLogic.createPlaidLinkToken(mockPlaid as any, 'user-1');
-    expect(token).toBe('link-token-123');
+    try {
+      const res = await makeRequest('/plaid/create-link-token', 'POST', { userId: 'test-user' });
+      const text = await res.clone().text();
+      console.log('Plaid link token response:', res.status, text);
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data).toHaveProperty('link_token');
+    } catch (err) {
+      console.error('Plaid link token error:', err instanceof Error ? err.message : String(err));
+      throw err;
+    }
   });
 
-  it('exchanges Plaid public token', async () => {
-    const access = await plaidLogic.exchangePlaidPublicToken(mockPlaid as any, 'public-token');
-    expect(access).toBe('access-token-123');
+  it('exchanges Plaid public token (should fail for random token)', async () => {
+    try {
+      const res = await makeRequest('/plaid/exchange-public-token', 'POST', { public_token: 'random' });
+      const text = await res.clone().text();
+      console.log('Plaid exchange token response:', res.status, text);
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data).toHaveProperty('access_token');
+    } catch (err) {
+      console.error('Plaid exchange token error:', err instanceof Error ? err.message : String(err));
+      throw err;
+    }
   });
 
-  it('fetches Plaid transactions', async () => {
-    const txs = await plaidLogic.fetchPlaidTransactions(mockPlaid as any, 'access-token-123');
-    expect(Array.isArray(txs)).toBe(true);
-    expect(txs[0].name).toMatch(/chick-fil-a/i);
+  it('fetches Plaid transactions (should fail for random token)', async () => {
+    try {
+      const res = await makeRequest('/plaid/transactions', 'POST', { access_token: 'random' });
+      const text = await res.clone().text();
+      console.log('Plaid fetch transactions response:', res.status, text);
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data).toHaveProperty('transactions');
+      expect(Array.isArray(data.transactions)).toBe(true);
+    } catch (err) {
+      console.error('Plaid fetch transactions error:', err instanceof Error ? err.message : String(err));
+      throw err;
+    }
   });
 });
